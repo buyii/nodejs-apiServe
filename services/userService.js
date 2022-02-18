@@ -8,7 +8,7 @@
 const { querySql, queryOne } = require('../utils/index');
 const md5 = require('../utils/md5');
 const jwt = require('jsonwebtoken');
-const boom = require('boom');
+const Result = require('../utils/Result')
 const { body, validationResult } = require('express-validator');
 const { 
   CODE_ERROR,
@@ -26,16 +26,7 @@ function login(req, res, next) {
   if (!err.isEmpty()) {
     // 获取错误信息
     const [{ msg }] = err.errors;
-    console.log(msg,222)
-    console.log(err.errors,333)
-    // res.json({ 
-    //   code: CODE_ERROR, 
-    //   msg: '用户名或密码错误', 
-    //   data: null 
-    // })
-    // 抛出错误，交给我们自定义的统一异常处理程序进行错误返回 
-    res.status(400).json({ errors: err.array() })
-    // next(boom.badRequest(msg));
+    new Result(null, msg).fail(res)
   } else {
     let { username, password } = req.body;
     // md5加密
@@ -45,11 +36,7 @@ function login(req, res, next) {
     .then(user => {
     	// console.log('用户登录===', user);
       if (!user || user.length === 0) {
-        res.json({ 
-        	code: CODE_ERROR, 
-        	msg: '用户名或密码错误', 
-        	data: null 
-        })
+        new Result(null, '用户名或密码错误').fail(res)
       } else {
         // 登录成功，签发一个token并返回给前端
         const token = jwt.sign(
@@ -70,15 +57,11 @@ function login(req, res, next) {
           gmt_create: user[0].gmt_create,
           gmt_modify: user[0].gmt_modify
         };
-
-        res.json({ 
-        	code: CODE_SUCCESS, 
-        	msg: '登录成功', 
-        	data: { 
-            token,
-            userData
-          } 
-        })
+        let data = { 
+          token,
+          userData
+        }
+        new Result(data, '登录成功').success(res)
       }
     })
   }
@@ -90,18 +73,14 @@ function register(req, res, next) {
   const err = validationResult(req);
   if (!err.isEmpty()) {
     const [{ msg }] = err.errors;
-    next(boom.badRequest(msg));
+    new Result(null, msg).fail(res)
   } else {
     let { username, password } = req.body;
     findUser(username)
   	.then(data => {
   		// console.log('用户注册===', data);
   		if (data) {
-  			res.json({ 
-	      	code: CODE_ERROR, 
-	      	msg: '用户已存在', 
-	      	data: null 
-	      })
+        new Result(null, '用户已存在').fail(res)
   		} else {
 	    	password = md5(password);
   			const query = `insert into users(username, password) values('${username}', '${password}')`;
@@ -109,11 +88,7 @@ function register(req, res, next) {
 		    .then(result => {
 		    	// console.log('用户注册===', result);
 		      if (!result || result.length === 0) {
-		        res.json({ 
-		        	code: CODE_ERROR, 
-		        	msg: '注册失败', 
-		        	data: null  
-		        })
+            new Result(null, '注册失败').fail(res)
 		      } else {
             const queryUser = `select * from users where username='${username}' and password='${password}'`;
             querySql(queryUser)
@@ -133,15 +108,11 @@ function register(req, res, next) {
                 gmt_create: user[0].gmt_create,
                 gmt_modify: user[0].gmt_modify
               };
-
-              res.json({ 
-                code: CODE_SUCCESS, 
-                msg: '注册成功', 
-                data: { 
-                  token,
-                  userData
-                } 
-              })
+              let data = { 
+                token,
+                userData
+              } 
+              new Result(data, '注册成功').success(res)
             })
 		      }
 		    })
@@ -156,13 +127,13 @@ function resetPwd(req, res, next) {
 	const err = validationResult(req);
   if (!err.isEmpty()) {
     const [{ msg }] = err.errors;
-    next(boom.badRequest(msg));
+    new Result(null, msg).fail(res)
   } else {
     let { username, oldPassword, newPassword } = req.body;
     oldPassword = md5(oldPassword);
     validateUser(username, oldPassword)
     .then(data => {
-      console.log('校验用户名和密码===', data);
+      // console.log('校验用户名和密码===', data);
       if (data) {
         if (newPassword) {
           newPassword = md5(newPassword);
@@ -171,32 +142,16 @@ function resetPwd(req, res, next) {
           .then(user => {
             // console.log('密码重置===', user);
             if (!user || user.length === 0) {
-              res.json({ 
-                code: CODE_ERROR, 
-                msg: '重置密码失败', 
-                data: null 
-              })
+              new Result(null, '重置密码失败').fail(res)
             } else {
-              res.json({ 
-                code: CODE_SUCCESS, 
-                msg: '重置密码成功', 
-                data: null
-              })
+              new Result(null, '重置密码成功').success(res)
             }
           })
         } else {
-          res.json({ 
-            code: CODE_ERROR, 
-            msg: '新密码不能为空', 
-            data: null 
-          })
+          new Result(null, '新密码不能为空').fail(res)
         }
       } else {
-        res.json({ 
-          code: CODE_ERROR, 
-          msg: '用户名或旧密码错误', 
-          data: null 
-        })
+        new Result(null, '用户名或旧密码错误').fail(res)
       }
     })
    

@@ -5,7 +5,7 @@
 */
 var createError = require('http-errors');
 const express = require('express');
-// const boom = require('boom'); // 引入boom模块，处理程序异常状态
+const Result = require('../utils/Result')
 const userRouter = require('./users'); // 引入user路由模块
 const taskRouter = require('./tasks'); // 引入task路由模块
 const { jwtAuth, decode } = require('../utils/user-jwt'); // 引入jwt认证函数
@@ -22,8 +22,6 @@ router.use('/api', taskRouter); // 注入任务路由模块
  * 否则，会拦截正常请求
  */
  router.use((req, res, next) => {
-  // console.log(404404)
-  // res.status(404).json({ error: '接口不存在' })
   next(createError(404));
 })
 
@@ -35,20 +33,13 @@ router.use((err, req, res, next) => {
   if (err && err.status  === 401) {
     const { status = 401, message } = err;
     // 抛出401异常
-    res.status(status).json({
-      code: status,
-      msg: 'token失效，请重新登录',
-      data: null
-    })
+    new Result(null, 'token失效，请重新登录').failStatus(res,status)
   } else {
     const { output } = err || {};
     // 错误码和错误信息
     const errCode = (err && err.status) || 500;
     const errMsg = (err && err.payload && err.payload.error) || err.message;
-    res.status(errCode).json({
-      code: errCode,
-      msg: errMsg
-    })
+    new Result(null, errMsg).failStatus(res,errCode)
   }
 })
 

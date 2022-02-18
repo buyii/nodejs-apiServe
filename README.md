@@ -34,7 +34,6 @@ NodeJS全栈开发之后端接口开发基于Node.js+Express+Mysql实现RESTFUL 
  * jwt
  * nodemon
  * cors
- * boom
  * pm2
  
 # 功能模块
