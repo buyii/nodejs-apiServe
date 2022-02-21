@@ -35,7 +35,7 @@ function queryTaskList(req, res, next) {
     status = (status || status == 0) ? status : null;
 
     let query = `select d.id, d.title, d.content, d.status, d.is_major, d.gmt_create, d.gmt_expire from sys_task d`;
-    querySql(query)
+    querySql(query,res)
     .then(data => {
     	// console.log('任务列表查询===', data);
       if (!data || data.length === 0) {
@@ -49,14 +49,14 @@ function queryTaskList(req, res, next) {
         // 拼接分页的sql语句命令
         if (status) {
           let query_1 = `select d.id, d.title, d.content, d.status, d.is_major, d.gmt_create, d.gmt_expire from sys_task d where status='${status}' order by d.gmt_create desc`;
-          querySql(query_1)
+          querySql(query_1,res)
           .then(result_1 => {
             console.log('分页1===', result_1);
             if (!result_1 || result_1.length === 0) {
               new Result(null, '暂无数据').fail(res)
             } else {
               let query_2 = query_1 + ` limit ${n} , ${pageSize}`;
-              querySql(query_2)
+              querySql(query_2,res)
               .then(result_2 => {
                 console.log('分页2===', result_2);
                 if (!result_2 || result_2.length === 0) {
@@ -75,7 +75,7 @@ function queryTaskList(req, res, next) {
           })
         } else {
           let query_3 = query + ` order by d.gmt_create desc limit ${n} , ${pageSize}`;
-          querySql(query_3)
+          querySql(query_3,res)
           .then(result_3 => {
             console.log('分页2===', result_3);
             if (!result_3 || result_3.length === 0) {
@@ -110,7 +110,7 @@ function addTask(req, res, next) {
         new Result(null, '任务名称不能重复').fail(res)
       } else {
         const query = `insert into sys_task(title, content, status, is_major, gmt_expire) values('${title}', '${content}', 0, 0, '${gmt_expire}')`;
-        querySql(query)
+        querySql(query,res)
         .then(data => {
           // console.log('添加任务===', data);
           if (!data || data.length === 0) {
@@ -142,7 +142,7 @@ function editTask(req, res, next) {
             new Result(null, '任务名称不能重复').fail(res)
           } else {
             const query = `update sys_task set title='${title}', content='${content}', gmt_expire='${gmt_expire}' where id='${id}'`;
-            querySql(query)
+            querySql(query,res)
             .then(data => {
               // console.log('编辑任务===', data);
               if (!data || data.length === 0) {
@@ -173,7 +173,7 @@ function updateTaskStatus(req, res, next) {
     .then(task => {
       if (task) {
         const query = `update sys_task set status='${status}' where id='${id}'`;
-        querySql(query)
+        querySql(query,res)
         .then(data => {
           // console.log('操作任务状态===', data);
           if (!data || data.length === 0) {
@@ -202,7 +202,7 @@ function updateMark(req, res, next) {
     .then(task => {
       if (task) {
         const query = `update sys_task set is_major='${is_major}' where id='${id}'`;
-        querySql(query)
+        querySql(query,res)
         .then(data => {
           // console.log('点亮红星标记===', data);
           if (!data || data.length === 0) {
@@ -232,7 +232,7 @@ function deleteTask(req, res, next) {
       if (task) {
         const query = `update sys_task set status='${status}' where id='${id}'`;
         // const query = `delete from sys_task where id='${id}'`;
-        querySql(query)
+        querySql(query,res)
         .then(data => {
           // console.log('删除任务===', data);
           if (!data || data.length === 0) {
@@ -257,7 +257,7 @@ function findTask(param, type) {
   } else {
     query = `select id, title from sys_task where id='${param}'`;
   }
-  return queryOne(query);
+  return queryOne(query,res);
 }
 
 

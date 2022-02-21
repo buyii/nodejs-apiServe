@@ -4,9 +4,9 @@
  * 日期: 2022年2月17日
 */
 
-
 const mysql = require('mysql');
 const config = require('../db/dbConfig');
+const Result = require('./Result')
 
 // 连接mysql
 function connect() {
@@ -20,13 +20,15 @@ function connect() {
 }
 
 // 新建查询连接
-function querySql(sql) { 
+function querySql(sql,routerRes) { 
   const conn = connect();
   return new Promise((resolve, reject) => {
     try {
       conn.query(sql, (err, res) => {
         if (err) {
           reject(err);
+          // err.sqlMessage
+          new Result(null,'服务器异常').failStatus(routerRes,500)
         } else {
           resolve(res);
         }
@@ -41,7 +43,7 @@ function querySql(sql) {
 }
 
 // 查询一条语句
-function queryOne(sql) {
+function queryOne(sql,routerRes) {
   return new Promise((resolve, reject) => {
     querySql(sql).then(res => {
       console.log('res===',res)
@@ -51,6 +53,7 @@ function queryOne(sql) {
         resolve(null);
       }
     }).catch(err => {
+      new Result(null, '服务器异常').failStatus(routerRes,500)
       reject(err);
     })
   })

@@ -3,9 +3,7 @@
  * 作者: BuYi
  * 日期: 2022年2月17日
 */
-var createError = require('http-errors');
 const bodyParser = require('body-parser'); // 引入body-parser模块
-const Result = require('./utils/Result')
 const express = require('express'); // 引入express模块
 const cors = require('cors'); // 引入cors模块
 const routes = require('./routes'); //导入自定义路由文件，创建模块化路由
@@ -18,33 +16,6 @@ app.use(cors()); // 注入cors模块解决跨域
 
 
 app.use('/', routes);
-
-
-/**
- * 集中处理404请求的中间件
- * 注意：该中间件必须放在正常处理流程之后
- * 否则，会拦截正常请求
- */
-app.use((req, res, next) => {
-    next(createError(404));
-})
-  
-  // 自定义统一异常处理中间件，需要放在代码最后
-app.use((err, req, res, next) => {
-    // 自定义用户认证失败的错误返回
-    console.log('err===', err);
-    if (err && err.status  === 401) {
-      const { status = 401, message } = err;
-      // 抛出401异常
-      new Result(null, 'token失效，请重新登录').failStatus(res,status)
-    } else {
-      const { output } = err || {};
-      // 错误码和错误信息
-      const errCode = (err && err.status) || 500;
-      const errMsg = (err && err.payload && err.payload.error) || err.message;
-      new Result(null, errMsg).failStatus(res,errCode)
-    }
-})
 
 module.exports = app;
 // app.listen(8088, () => { // 监听8088端口

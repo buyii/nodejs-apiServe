@@ -32,7 +32,7 @@ function login(req, res, next) {
     // md5加密
     password = md5(password);
     const query = `select * from users where username='${username}' and password='${password}'`;
-    querySql(query)
+    querySql(query,res)
     .then(user => {
     	// console.log('用户登录===', user);
       if (!user || user.length === 0) {
@@ -84,14 +84,14 @@ function register(req, res, next) {
   		} else {
 	    	password = md5(password);
   			const query = `insert into users(username, password) values('${username}', '${password}')`;
-  			querySql(query)
+  			querySql(query,res)
 		    .then(result => {
 		    	// console.log('用户注册===', result);
 		      if (!result || result.length === 0) {
             new Result(null, '注册失败').fail(res)
 		      } else {
             const queryUser = `select * from users where username='${username}' and password='${password}'`;
-            querySql(queryUser)
+            querySql(queryUser,res)
             .then(user => {
               const token = jwt.sign(
                 { username },
@@ -138,7 +138,7 @@ function resetPwd(req, res, next) {
         if (newPassword) {
           newPassword = md5(newPassword);
 				  const query = `update users set password='${newPassword}' where username='${username}'`;
-				  querySql(query)
+				  querySql(query,res)
           .then(user => {
             // console.log('密码重置===', user);
             if (!user || user.length === 0) {
@@ -161,13 +161,13 @@ function resetPwd(req, res, next) {
 // 校验用户名和密码
 function validateUser(username, oldPassword) {
 	const query = `select id, username from users where username='${username}' and password='${oldPassword}'`;
-  	return queryOne(query);
+  	return queryOne(query,res);
 }
 
 // 通过用户名查询用户信息
 function findUser(username) {
   const query = `select id, username from users where username='${username}'`;
-  return queryOne(query);
+  return queryOne(query,res);
 }
 
 module.exports = {

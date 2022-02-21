@@ -29,7 +29,7 @@ router.use('/api', taskRouter); // 注入任务路由模块
 // 自定义统一异常处理中间件，需要放在代码最后
 router.use((err, req, res, next) => {
   // 自定义用户认证失败的错误返回
-  console.log('err===', err);
+  console.log('err===================',err)
   if (err && err.status  === 401) {
     const { status = 401, message } = err;
     // 抛出401异常

@@ -1,7 +1,7 @@
 module.exports = {
   apps : [{
-    name: 'todo_node_api',
-    script: 'app.js',
+    name: 'nodejs-serve',
+    script: './bin/www',
     instances: 1,
     autorestart: true,
     watch: false,
